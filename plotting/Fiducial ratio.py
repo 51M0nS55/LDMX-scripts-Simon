@@ -10,83 +10,55 @@ cell_radius = 5.0
 
 # Directory names and base directory
 base_dir = "/home/vamitamas/Samples8GeV"
-directories = [
+batches = [
     "v3.3.3_ecalPN-batch1-trigSkim",
-    "v3.3.3_ecalPN-batch2-trigSkim",
-    "v3.3.3_ecalPN-batch3-trigSkim",
-    "v3.3.3_ecalPN-batch4-trigSkim",
-    "v3.3.3_ecalPN-batch5-trigSkim",
-    "v3.3.3_ecalPN-batch6-trigSkim",
-    "v3.3.3_ecalPN-batch7-trigSkim",
-    "v3.3.3_ecalPN-batch8-trigSkim",
+    # ... include all batches ...
 ]
 
-# Function to calculate the projection to the ecal face
-def projection(Recoilx, Recoily, Recoilz, RPx, RPy, RPz, HitZ):
-    x_final = Recoilx + RPx/RPz * (HitZ - Recoilz) if RPz != 0 else 0
-    y_final = Recoily + RPy/RPz * (HitZ - Recoilz) if RPz != 0 else 0
-    return (x_final, y_final)
+# Define projection and dist functions here, as per your previous definitions...
+cells = load_cellMap()  # Define load_cellMap or replace with the correct logic to load cells
 
-# Function to calculate distance
-def dist(cell, point):
-    return np.sqrt((cell[0] - point[0])**2 + (cell[1] - point[1])**2)
-
-# Function to load the cell map from a given version
-def load_cellMap(version='v14'):
-    cellMap = {}
-    # Adjust the path to the cellmodule.txt file as needed
-    for i, x, y in np.loadtxt(f'data/{version}/cellmodule.txt', unpack=True):
-        cellMap[i] = (x, y)
-    return np.array(list(cellMap.values()))
-
-# Function to apply the fiducial cut
-def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
-    N = len(recoilX)
-    f_cut = np.zeros(N, dtype=bool)
-    for i in range(N):
-        fiducial = False
-        fXY = projection(recoilX[i], recoilY[i], scoringPlaneZ, recoilPx[i], recoilPy[i], recoilPz[i], ecalFaceZ)
-        if not all(val == -9999 for val in [recoilX[i], recoilY[i], recoilPx[i], recoilPy[i], recoilPz[i]]):
-            for cell in cells:
-                if dist(cell, fXY) <= cell_radius:
-                    fiducial = True
-                    break
-        f_cut[i] = fiducial
-    return f_cut
-
-# Load cell information
-cells = load_cellMap()
-
-# Initialize a list to hold the fiducial cut flags for all processed events
-all_f_cut = []
+# Initializing counters
+n_initial = 0
+n_final = 0
 
 # Iterate over each directory and process all ROOT files found
-for directory in directories:
-    root_files = glob.glob(f"{base_dir}/{directory}/*.root")
+for batch in batches:
+    root_files = glob.glob(f"{base_dir}/{batch}/*.root")
     for file_path in root_files:
-        # Here, you would load your data using uproot
-        # For example: with uproot.open(file_path) as file: ...
-        # Dummy data for illustration purposes:
-        N = 100  # Assuming 100 events per file; replace with dynamic loading
-        recoilX, recoilY, recoilPx, recoilPy, recoilPz = np.random.rand(5, N)  # Dummy data
-        
-        # Apply fiducial cut to loaded data
-        f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells)
-        all_f_cut.extend(f_cut)
+        # Open the file with uproot
+        with uproot.open(file_path) as file:
+            # Access the TTree
+            tree = file['treename']  # Replace 'tree_name' with the actual name of the TTree
 
-# Convert list of flags to a NumPy array for easier analysis
-all_f_cut = np.array(all_f_cut)
+            # Extract the branches 
+            recoilX = tree['recoilX_branch_name'].array()
+            recoilY = tree['recoilY_branch_name'].array()
+            recoilZ = tree['recoilZ_branch_name'].array()
+            recoilPx = tree['recoilPx_branch_name'].array()
+            recoilPy = tree['recoilPy_branch_name'].array()
+            recoilPz = tree['recoilPz_branch_name'].array()
+            nReadoutHits = tree['nReadoutHits_branch_name'].array()
 
-# Calculate and print statistics
-fiducial_events = np.sum(all_f_cut)
-total_events = len(all_f_cut)
-ratio = fiducial_events / total_events
-print(f"Fiducial/Total Events Ratio: {ratio:.4f}")
+            # Fiducial cut - the logic to find the e_cut should be defined in a function
+            e_cut = find_recoil_electron(recoilX, recoilY, recoilZ, recoilPx, recoilPy, recoilPz)
+            f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells, e_cut)
 
-# Plotting the histogram of fiducial vs non-fiducial events
-plt.hist(all_f_cut.astype(int), bins=[-0.5, 0.5, 1.5], rwidth=0.8, labels=['Non-Fiducial', 'Fiducial'])
-plt.xticks([0, 1])
-plt.xlabel('Event Type')
-plt.ylabel('Number of Events')
-plt.title('Fiducial vs Non-Fiducial Events')
+            # Update the initial and final event counters
+            n_initial += len(nReadoutHits)
+            n_final += np.sum(f_cut)
+
+# Compute the ratio of the final number of events to the initial number of events
+ratio = n_final / n_initial if n_initial > 0 else 0
+
+print(f"Initial number of events: {n_initial}")
+print(f"Final number of events after fiducial cut: {n_final}")
+print(f"Ratio of final to initial events: {ratio:.4f}")
+
+# Plot histogram of the nReadoutHits after fiducial cut
+plt.hist(nReadoutHits[f_cut], bins=50, alpha=0.75, label='After Fiducial Cut')
+plt.xlabel('nReadoutHits')
+plt.ylabel('Frequency')
+plt.legend()
+plt.title('Distribution of nReadoutHits After Fiducial Cut')
 plt.show()
