@@ -16,11 +16,16 @@ batches = [
 ]
 
 # Define projection and dist functions here, as per your previous definitions...
-cells = load_cellMap()  # Define load_cellMap or replace with the correct logic to load cells
 
+def load_cellMap(filepath):
+    # Load data assuming the file has three columns: cell_id, x_coord, y_coord
+    data = np.loadtxt(filepath, delimiter=',')  # Adjust delimiter as per your file
+    cells = {int(row[0]): (row[1], row[2]) for row in data}
+    return cells
 # Initializing counters
 n_initial = 0
 n_final = 0
+cells = load_cellMap()  # Define load_cellMap or replace with the correct logic to load cells
 
 # Iterate over each directory and process all ROOT files found
 for batch in batches:
