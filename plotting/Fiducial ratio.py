@@ -45,7 +45,7 @@ def load_cellMap(filepath):
     return cellMap
 
 # Path to the ROOT file
-file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root/LDMX_Events:5/SimParticles_v14_nonfid'
+file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
 # Open the ROOT file and load branches
 with uproot.open(file_path) as file:
