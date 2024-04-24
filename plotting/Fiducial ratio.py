@@ -39,6 +39,7 @@ def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
     return f_cut
 
 # Load cell information
+cellMap = np.genfromtxt(filepath, dtype={'names': ('x', 'y', 'id'), 'formats': ('f4', 'f4', 'i4')}, usecols=[1,2,0])
 cells = load_cellMap('data/v14/cellmodule.txt')
 
 # Path to the ROOT file
