@@ -43,13 +43,13 @@ def load_cellMap(filepath):
     cellMap = np.genfromtxt(filepath, dtype={'names': ('x', 'y', 'id'), 'formats': ('f4', 'f4', 'i4')}, usecols=[1,2,0])
     cells = load_cellMap('data/v14/cellmodule.txt')
     return cellMap
-    
+
 # Path to the ROOT file
 file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
 # Open the ROOT file and load branches
 with uproot.open(file_path) as file:
-    tree = file["tree_name"]  # Replace 'tree_name' with the actual name of the TTree
+    tree = file["SimParticle_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
     recoilX = tree['recoilX'].array(library='np')
     recoilY = tree['recoilY'].array(library='np')
     recoilPx = tree['recoilPx'].array(library='np')
