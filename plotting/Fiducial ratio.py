@@ -39,9 +39,11 @@ def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
     return f_cut
 
 # Load cell information
-cellMap = np.genfromtxt(filepath, dtype={'names': ('x', 'y', 'id'), 'formats': ('f4', 'f4', 'i4')}, usecols=[1,2,0])
-cells = load_cellMap('data/v14/cellmodule.txt')
-
+def load_cellMap(filepath):
+    cellMap = np.genfromtxt(filepath, dtype={'names': ('x', 'y', 'id'), 'formats': ('f4', 'f4', 'i4')}, usecols=[1,2,0])
+    cells = load_cellMap('data/v14/cellmodule.txt')
+    return cellMap
+    
 # Path to the ROOT file
 file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
