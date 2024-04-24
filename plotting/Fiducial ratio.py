@@ -49,7 +49,7 @@ file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_product
 
 # Open the ROOT file and load branches
 with uproot.open(file_path) as file:
-    tree = file["SimParticle_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
+    tree = file["LDMX_Events:5"]  # Replace 'tree_name' with the actual name of the TTree
     recoilX = tree['recoilX'].array(library='np')
     recoilY = tree['recoilY'].array(library='np')
     recoilPx = tree['recoilPx'].array(library='np')
