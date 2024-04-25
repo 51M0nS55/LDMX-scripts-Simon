@@ -49,24 +49,15 @@ def load_cellMap(filepath):
 file_path = 'home/duncansw/GraphNet_input/v14/8gev/v3_tskim/XCal_total/sig_eval/v14_8gev_0.1_XCal_total_40.root'
 
 
-# Open the ROOT file and load branches
-#with uproot.open(file_path) as file:
-#    tree = file["LDMX_Events:5/SimParticles_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
-#    recoilX = tree['recoilX'].array(library='np')
-#    recoilY = tree['recoilY'].array(library='np')
-#    recoilPx = tree['recoilPx'].array(library='np')
-#    recoilPy = tree['recoilPy'].array(library='np')
-#    recoilPz = tree['recoilPz'].array(library='np')
-
+ Open the ROOT file and load branches
 with uproot.open(file_path) as file:
-    tree = file["skimmed_events"]
-    recoilX = tree['recoilX_'].array(library='np')
-    recoilY = tree['recoilY_'].array(library='np')
-    # recoilZ = tree['z_tsp_'].array(library='np')
-    recoilPx = tree['recoilPx_'].array(library='np')
-    recoilPy = tree['recoilPy_'].array(library='np')
-    recoilPz = tree['recoilPz_'].array(library='np')
-    
+    tree = file["LDMX_Events:5/SimParticles_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
+    recoilX = tree['recoilX'].array(library='np')
+    recoilY = tree['recoilY'].array(library='np')
+    recoilPx = tree['recoilPx'].array(library='np')
+    recoilPy = tree['recoilPy'].array(library='np')
+    recoilPz = tree['recoilPz'].array(library='np')
+
     # Apply the fiducial cut
     f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells)
 
