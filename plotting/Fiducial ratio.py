@@ -45,18 +45,17 @@ def load_cellMap(filepath):
     return cellMap
 
 # Path to the ROOT file
-#file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
-file_path = 'home/duncansw/GraphNet_input/v14/8gev/v3_tskim/XCal_total/sig_eval/v14_8gev_0.1_XCal_total_40.root'
+file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
 
  Open the ROOT file and load branches
 with uproot.open(file_path) as file:
     tree = file["LDMX_Events:5/SimParticles_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
-    recoilX = tree['recoilX'].array(library='np')
-    recoilY = tree['recoilY'].array(library='np')
-    recoilPx = tree['recoilPx'].array(library='np')
-    recoilPy = tree['recoilPy'].array(library='np')
-    recoilPz = tree['recoilPz'].array(library='np')
+    recoilX = tree['SimParticles_v14_nonfid.second.x_'].array(library='np')
+    recoilY = tree['SimParticles_v14_nonfid.second.y_'].array(library='np')
+    recoilPx = tree['SimParticles_v14_nonfid.second.px_'].array(library='np')
+    recoilPy = tree['SimParticles_v14_nonfid.second.py_'].array(library='np')
+    recoilPz = tree['SimParticles_v14_nonfid.second.pz_'].array(library='np')
 
     # Apply the fiducial cut
     f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells)
