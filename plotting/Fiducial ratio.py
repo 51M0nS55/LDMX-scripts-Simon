@@ -48,7 +48,7 @@ def load_cellMap(filepath):
 file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
 
- Open the ROOT file and load branches
+#Open the ROOT file and load branches
 with uproot.open(file_path) as file:
     tree = file["LDMX_Events:5/SimParticles_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
     recoilX = tree['SimParticles_v14_nonfid.second.x_'].array(library='np')
