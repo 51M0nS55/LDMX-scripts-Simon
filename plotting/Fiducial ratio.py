@@ -23,18 +23,16 @@ def load_cellMap(filepath):
     return cellMap
 
 def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
-    """Apply the fiducial cut to the given recoil data."""
     N = len(recoilX)
     f_cut = np.zeros(N, dtype=bool)
+    x_final, y_final = projection(recoilX, recoilY, np.full(N, scoringPlaneZ), recoilPx, recoilPy, recoilPz, np.full(N, ecalFaceZ))
+    
     for i in range(N):
-        fiducial = False
-        fXY = projection(recoilX[i], recoilY[i], scoringPlaneZ, recoilPx[i], recoilPy[i], recoilPz[i], ecalFaceZ)
-        if not all(val == -9999 for val in [recoilX[i], recoilY[i], recoilPx[i], recoilPy[i], recoilPz[i]]):
+        if not all([val == -9999 for val in [recoilX[i], recoilY[i], recoilPx[i], recoilPy[i], recoilPz[i]]]):
             for cell in cells:
-                if dist((cell['x'], cell['y']), fXY) <= cell_radius:
-                    fiducial = True
+                if dist(cell, (x_final[i], y_final[i])) <= cell_radius:
+                    f_cut[i] = True
                     break
-        f_cut[i] = fiducial
     return f_cut
 
 # Load cell information
