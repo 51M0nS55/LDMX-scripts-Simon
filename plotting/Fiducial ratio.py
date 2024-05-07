@@ -38,7 +38,7 @@ def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
     return f_cut
 
 # Load cell information
-cells = load_cellMap('/home/simons/LDMX-scripts-Simon/plotting/cellmodule.txt')
+cells = load_cellMap('/home/simons/LDMX-scripts-Simon/cellmodule.txt')
 
 # Path to the ROOT file
 file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
