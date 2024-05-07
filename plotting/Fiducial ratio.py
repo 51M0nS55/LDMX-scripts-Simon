@@ -19,8 +19,7 @@ def dist(cell, point):
 
 def load_cellMap(filepath):
     """Load cell map from a given file."""
-    cellMap = np.loadtxt(filepath, dtype={'names': ('id', 'x', 'y'), 'formats': ('i4', 'f4', 'f4')})
-    print(f"Loaded detector info from {filepath}")
+    cellMap = np.genfromtxt(filepath, dtype={'names': ('x', 'y', 'id'), 'formats': ('f4', 'f4', 'i4')}, usecols=[1,2,0])
     return cellMap
 
 def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
@@ -32,25 +31,22 @@ def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
         fXY = projection(recoilX[i], recoilY[i], scoringPlaneZ, recoilPx[i], recoilPy[i], recoilPz[i], ecalFaceZ)
         if not all(val == -9999 for val in [recoilX[i], recoilY[i], recoilPx[i], recoilPy[i], recoilPz[i]]):
             for cell in cells:
-                if dist(cell, fXY) <= cell_radius:
+                if dist((cell['x'], cell['y']), fXY) <= cell_radius:
                     fiducial = True
                     break
         f_cut[i] = fiducial
     return f_cut
 
 # Load cell information
-def load_cellMap(filepath):
-    cellMap = np.genfromtxt(filepath, dtype={'names': ('x', 'y', 'id'), 'formats': ('f4', 'f4', 'i4')}, usecols=[1,2,0])
-    cells = load_cellMap('data/v14/cellmodule.txt')
-    return cellMap
+cells = load_cellMap('data/v14/cellmodule.txt')
 
 # Path to the ROOT file
 file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
-
-#Open the ROOT file and load branches
+# Open the ROOT file and load the tree
 with uproot.open(file_path) as file:
-    tree = file["LDMX_Events:5/SimParticles_v14_nonfid"]  # Replace 'tree_name' with the actual name of the TTree
+    tree = file["LDMX_Events"]
+    # Load the branches for analysis
     recoilX = tree['SimParticles_v14_nonfid.second.x_'].array(library='np')
     recoilY = tree['SimParticles_v14_nonfid.second.y_'].array(library='np')
     recoilPx = tree['SimParticles_v14_nonfid.second.px_'].array(library='np')
@@ -69,7 +65,7 @@ print(f"Fiducial Events: {fiducial_events}")
 print(f"Fiducial/Total Events Ratio: {ratio:.4f}")
 
 # Plotting the histogram of fiducial vs non-fiducial events
-plt.hist(f_cut.astype(int), bins=[-0.5, 0.5, 1.5], rwidth=0.8, labels=['Non-Fiducial', 'Fiducial'])
+plt.hist(f_cut.astype(int), bins=[-0.5, 0.5, 1.5], rwidth=0.8)
 plt.xticks([0, 1], ['Non-Fiducial', 'Fiducial'])
 plt.xlabel('Event Type')
 plt.ylabel('Number of Events')
