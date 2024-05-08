@@ -34,7 +34,7 @@ def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
         x_final, y_final = projection(recoilX[i], recoilY[i],scoringPlaneZ, recoilPx[i], recoilPy[i], recoilPz[i],ecalFaceZ)
         if not all([val == -9999 for val in [recoilX[i], recoilY[i], recoilPx[i], recoilPy[i], recoilPz[i]]]):
             for cell in cells:
-                if dist(cell, (x_final[i], y_final[i])) <= cell_radius:
+                if dist(cell, (x_final, y_final)) <= cell_radius:
                     f_cut[i] = True
                     break
     return f_cut
