@@ -46,8 +46,8 @@ cells = load_cellMap('/home/simons/LDMX-scripts-Simon/cellmodule.txt')
 file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
 
 # Open the ROOT file and load the tree
-with uproot.open(file_path) as file:
-    tree = file["LDMX_Events"]
+with uproot.open(file_path)['LDMX_Events'] as tree:
+    #tree = file["LDMX_Events"]
     data = tree.arrays(branchList)
     # Load the branches for analysis
     recoilX = data['EcalVeto_v14_nonfid.recoilX_']#.array(library='np')
