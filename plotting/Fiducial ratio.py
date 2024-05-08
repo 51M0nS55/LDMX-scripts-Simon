@@ -45,11 +45,11 @@ file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_product
 with uproot.open(file_path) as file:
     tree = file["LDMX_Events"]
     # Load the branches for analysis
-    recoilX = tree['SimParticles_v14_nonfid.second.x_'].array(library='np')
-    recoilY = tree['SimParticles_v14_nonfid.second.y_'].array(library='np')
-    recoilPx = tree['SimParticles_v14_nonfid.second.px_'].array(library='np')
-    recoilPy = tree['SimParticles_v14_nonfid.second.py_'].array(library='np')
-    recoilPz = tree['SimParticles_v14_nonfid.second.pz_'].array(library='np')
+    recoilX = tree['EcalVeto_v14_nonfid.recoilX_'].array(library='np')
+    recoilY = tree['EcalVeto_v14_nonfid.recoilY_'].array(library='np')
+    recoilPx = tree['EcalVeto_v14_nonfid.recoilPx_'].array(library='np')
+    recoilPy = tree['EcalVeto_v14_nonfid.recoilPy_'].array(library='np')
+    recoilPz = tree['EcalVeto_v14_nonfid.recoilPz_'].array(library='np')
 
     # Apply the fiducial cut
     f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells)
