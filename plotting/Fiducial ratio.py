@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import uproot
 
-branchList = ["EcalVeto_v14_nonfid.recoilX_","EcalVeto_v14_nonfid.recoilY_","EcalVeto_v14_nonfid.recoilPx_",
-            "EcalVeto_v14_nonfid.recoilPy_","EcalVeto_v14_nonfid.recoilPz_"]
+branchList = ["EcalVeto_v14_nonfid/recoilX_","EcalVeto_v14_nonfid/recoilY_","EcalVeto_v14_nonfid/recoilPx_",
+            "EcalVeto_v14_nonfid/recoilPy_","EcalVeto_v14_nonfid/recoilPz_"]
 
 
 # Constants for the fiducial cut calculations
@@ -50,11 +50,11 @@ with uproot.open(file_path)['LDMX_Events'] as tree:
     #tree = file["LDMX_Events"]
     data = tree.arrays(branchList)
     # Load the branches for analysis
-    recoilX = data['EcalVeto_v14_nonfid.recoilX_']#.array(library='np')
-    recoilY = data['EcalVeto_v14_nonfid.recoilY_']#.array(library='np')
-    recoilPx = data['EcalVeto_v14_nonfid.recoilPx_']#.array(library='np')
-    recoilPy = data['EcalVeto_v14_nonfid.recoilPy_']#.array(library='np')
-    recoilPz = data['EcalVeto_v14_nonfid.recoilPz_']#.array(library='np')
+    recoilX = data['EcalVeto_v14_nonfid/recoilX_']#.array(library='np')
+    recoilY = data['EcalVeto_v14_nonfid/recoilY_']#.array(library='np')
+    recoilPx = data['EcalVeto_v14_nonfid/recoilPx_']#.array(library='np')
+    recoilPy = data['EcalVeto_v14_nonfid/recoilPy_']#.array(library='np')
+    recoilPz = data['EcalVeto_v14_nonfid/recoilPz_']#.array(library='np')
 
     # Apply the fiducial cut
     f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells)
