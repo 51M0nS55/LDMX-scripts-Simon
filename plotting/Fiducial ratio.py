@@ -25,9 +25,9 @@ def load_cellMap(filepath):
 def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
     N = len(recoilX)
     f_cut = np.zeros(N, dtype=bool)
-    x_final, y_final = projection(recoilX, recoilY, np.full(N, scoringPlaneZ), recoilPx, recoilPy, recoilPz, np.full(N, ecalFaceZ))
     
     for i in range(N):
+        x_final, y_final = projection(recoilX, recoilY, np.full(N, scoringPlaneZ), recoilPx, recoilPy, recoilPz, np.full(N, ecalFaceZ))
         if not all([val == -9999 for val in [recoilX[i], recoilY[i], recoilPx[i], recoilPy[i], recoilPz[i]]]):
             for cell in cells:
                 if dist(cell, (x_final[i], y_final[i])) <= cell_radius:
