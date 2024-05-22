@@ -43,18 +43,26 @@ def apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells):
 cells = load_cellMap('/home/simons/LDMX-scripts-Simon/cellmodule.txt')
 
 # Path to the ROOT file
-file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
+#file_path = '/home/vamitamas/NonFiducialSimu/events_nonfiducial_fullEcal_production.root'
+file_path = '/home/vamitamas/Samples8GeV/Ap1GeV_sim/mc_v14-8gev-8.0GeV-1e-signal_W_noDecay_sim_run10000227_t1699048086.root'
 
 # Open the ROOT file and load the tree
 with uproot.open(file_path)['LDMX_Events'] as tree:
     #tree = file["LDMX_Events"]
     data = tree.arrays(branchList)
     # Load the branches for analysis
-    recoilX = data['EcalVeto_v14_nonfid/recoilX_']#.array(library='np')
-    recoilY = data['EcalVeto_v14_nonfid/recoilY_']#.array(library='np')
-    recoilPx = data['EcalVeto_v14_nonfid/recoilPx_']#.array(library='np')
-    recoilPy = data['EcalVeto_v14_nonfid/recoilPy_']#.array(library='np')
-    recoilPz = data['EcalVeto_v14_nonfid/recoilPz_']#.array(library='np')
+    #recoilX = data['EcalVeto_v14_nonfid/recoilX_']#.array(library='np')
+    #recoilY = data['EcalVeto_v14_nonfid/recoilY_']#.array(library='np')
+    #recoilPx = data['EcalVeto_v14_nonfid/recoilPx_']#.array(library='np')
+    #recoilPy = data['EcalVeto_v14_nonfid/recoilPy_']#.array(library='np')
+    #recoilPz = data['EcalVeto_v14_nonfid/recoilPz_']#.array(library='np')
+
+
+    recoilX = data['EcalVeto_signal.recoilX_']#.array(library='np')
+    recoilY = data['EcalVeto_signal.recoilY_']#.array(library='np')
+    recoilPx = data['EcalVeto_signal.recoilPx_']#.array(library='np')
+    recoilPy = data['EcalVeto_signal.recoilPy_']#.array(library='np')
+    recoilPz = data['EcalVeto_signal.recoilPz_']#.array(library='np')
 
     # Apply the fiducial cut
     f_cut = apply_fiducial_cut(recoilX, recoilY, recoilPx, recoilPy, recoilPz, cells)
