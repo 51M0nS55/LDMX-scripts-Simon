@@ -2,8 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import uproot
 
-branchList = ["EcalVeto_v14_nonfid/recoilX_","EcalVeto_v14_nonfid/recoilY_","EcalVeto_v14_nonfid/recoilPx_",
-            "EcalVeto_v14_nonfid/recoilPy_","EcalVeto_v14_nonfid/recoilPz_"]
+#branchList = ["EcalVeto_v14_nonfid/recoilX_","EcalVeto_v14_nonfid/recoilY_","EcalVeto_v14_nonfid/recoilPx_","EcalVeto_v14_nonfid/recoilPy_","EcalVeto_v14_nonfid/recoilPz_"]
+
+
+branchList = ["EcalVeto_signal.recoilX_","EcalVeto_signal.recoilY_","EcalVeto_signal.recoilPx_",
+            "EcalVeto_signal.recoilPy_","EcalVeto_signal.recoilPz_"]
 
 
 # Constants for the fiducial cut calculations
