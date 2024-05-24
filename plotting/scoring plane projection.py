@@ -87,7 +87,8 @@ for mass in file_templates.keys():
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
                     
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events'] as t:
+            #with uproot.open(filename, interpretation_executor=executor)['LDMX_Events'] as t:
+            with uproot.open(filename)['LDMX_Events'] as t:
                 if not t.keys(): # if no keys in 'LDMX_Events'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
