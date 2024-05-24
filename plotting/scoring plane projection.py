@@ -6,7 +6,7 @@ import math
 from tqdm import tqdm
 import awkward
 import concurrent.futures
-executor = concurrent.futures.ThreadPoolExecutor(20)
+#executor = concurrent.futures.ThreadPoolExecutor(20)
 
 #detector constants
 SP_TARGET_DOWN_Z = 0.1767
@@ -76,13 +76,13 @@ for mass in file_templates.keys():
     # loop over files of this mass 
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
     	# stop after i events
-        if nEvents>=2e4:
+        if nEvents>=1e4: # reduced
             break
         # stop after i files
         #if i == 5:
             #break
         try:
-            with uproot.open(filename, interpretation_executor=executor) as file:
+            with uproot.open(filename) as file:#, interpretation_executor=executor) as file:
                 if not file.keys(): # if no keys in file
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
@@ -99,7 +99,7 @@ for mass in file_templates.keys():
                 if key_miss:
                     print(f"MISSING KEY(S) IN: {filename}  SKIPPING...", flush=True)
                     continue
-                data = t.arrays(branchList, interpretation_executor=executor)
+                data = t.arrays(branchList) #, interpretation_executor=executor)
 
                 # tsp leaves
                 pdgID = data[branchList[0]]
