@@ -21,7 +21,9 @@ def projection(Recoilx, Recoily, Recoilz, RPx, RPy, RPz, HitZ):
     y_final = Recoily + RPy/RPz*(HitZ - Recoilz) if RPy else 0
     return (x_final, y_final)
 
+
 def _load_cellMap(version='v13'):
+    cells = load_cellMap('/home/simons/LDMX-scripts-Simon/cellmodule.txt')
     cellMap = {}
     for i, x, y in np.loadtxt('/home/duncansw/LDMX-scripts/GraphNet/data/%s/cellmodule.txt' % version):
         cellMap[i] = (x, y)
