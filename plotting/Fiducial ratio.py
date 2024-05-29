@@ -15,7 +15,7 @@ ecalFaceZ = 247.932
 cell_radius = 5.0
 
 def projection(Recoilx, Recoily, Recoilz, RPx, RPy, RPz, HitZ):
-    """Project the recoil coordinates from the scoring plane to the ecal face."""
+    #Project the recoil coordinates from the scoring plane to the ecal face.
     x_final = Recoilx + RPx / RPz * (HitZ - Recoilz) if RPz != 0 else 0
     y_final = Recoily + RPy / RPz * (HitZ - Recoilz) if RPy != 0 else 0
     return (x_final, y_final)
