@@ -23,7 +23,6 @@ def projection(Recoilx, Recoily, Recoilz, RPx, RPy, RPz, HitZ):
 
 
 def _load_cellMap(version='v13'):
-    cells = load_cellMap('/home/simons/LDMX-scripts-Simon/cellmodule.txt')
     cellMap = {}
     for i, x, y in np.loadtxt('/home/duncansw/LDMX-scripts/GraphNet/data/%s/cellmodule.txt' % version):
         cellMap[i] = (x, y)
