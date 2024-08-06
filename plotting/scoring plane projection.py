@@ -113,6 +113,8 @@ def process_file(filename, branchList, cells, mass):
                     if e_index >= 0:
                         e_cut[i][e_index] = True
 
+                # Properly handle boolean indexing for awkward arrays
+                e_cut = ak.Array(e_cut)
                 recoilX = pad_array(x[e_cut])
                 recoilY = pad_array(y[e_cut])
                 recoilPx = pad_array(px[e_cut])
