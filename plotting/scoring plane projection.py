@@ -67,13 +67,15 @@ for mass in file_templates.keys():
         branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_']
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalHits_sim.energy_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
 
     nEvents = 0  # count total events (post-trigger)
     nNonFid = 0  # count nonfiducial events
+    ecal_energy_hits = []  # store ECal energy hits for non-fiducial events
+
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
@@ -160,7 +162,12 @@ for mass in file_templates.keys():
                         f_cut[i] = True
 
                 # add nonfiducial count to running total
-                nNonFid += len(recoilX[f_cut == 0])
+                non_fid_events = f_cut == 0
+                nNonFid += np.sum(non_fid_events)
+
+                # Extract ECal energy for non-fiducial events
+                if not mass:  # only for background
+                    ecal_energy_hits.extend(data['ECalHits_sim.energy_'][non_fid_events])
 
         except OSError:  # uproot complains and need to skip these files
             continue
@@ -171,7 +178,8 @@ for mass in file_templates.keys():
         nonfid_uncertainty = nonfid_ratio * (math.sqrt(nNonFid) / nNonFid + math.sqrt(nEvents) / nEvents)
         nonfid_ratios[mass] = {
             "ratio": nonfid_ratio,
-            "uncertainty": nonfid_uncertainty
+            "uncertainty": nonfid_uncertainty,
+            "ecal_energy_hits": ecal_energy_hits
         }
     else:
         nonfid_ratios[mass] = "no events"
