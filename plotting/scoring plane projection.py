@@ -67,7 +67,7 @@ for mass in file_templates.keys():
         branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalHits_sim.energy_']
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalHits_sim.energy_', 'ECalHits_sim.isNoise_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
@@ -109,6 +109,8 @@ for mass in file_templates.keys():
                 px = data[branchList[4]]
                 py = data[branchList[5]]
                 pz = data[branchList[6]]
+                ecal_energy = data['ECalHits_sim.energy_']
+                is_noise = data['ECalHits_sim.isNoise_']
 
                 # Apply trigger for signal
                 if mass:
@@ -123,6 +125,8 @@ for mass in file_templates.keys():
                     px = tskimmed_data[branchList[4]]
                     py = tskimmed_data[branchList[5]]
                     pz = tskimmed_data[branchList[6]]
+                    ecal_energy = tskimmed_data['ECalHits_sim.energy_']
+                    is_noise = tskimmed_data['ECalHits_sim.isNoise_']
 
                 # add events to running count
                 nEvents += len(z)
@@ -167,7 +171,9 @@ for mass in file_templates.keys():
 
                 # Extract ECal energy for non-fiducial events
                 if not mass:  # only for background
-                    ecal_energy_hits.extend(data['ECalHits_sim.energy_'][non_fid_events])
+                    # Ignore hits marked as noise
+                    valid_hits = ~is_noise & non_fid_events
+                    ecal_energy_hits.extend(ecal_energy[valid_hits])
 
         except OSError:  # uproot complains and need to skip these files
             continue
@@ -175,7 +181,7 @@ for mass in file_templates.keys():
     # compute nonfiducial ratio (for this mass point)
     if nEvents > 0:
         nonfid_ratio = nNonFid / nEvents
-        nonfid_uncertainty = nonfid_ratio * (math.sqrt(nNonFid) / nNonFid + math.sqrt(nEvents) / nEvents)
+        nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
         nonfid_ratios[mass] = {
             "ratio": nonfid_ratio,
             "uncertainty": nonfid_uncertainty,
