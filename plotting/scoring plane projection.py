@@ -38,6 +38,28 @@ def pad_array(arr):
     arr = awkward.fill_none(arr, 0)
     return awkward.flatten(arr)
 
+# Path to one of the files
+sample_file = '/home/vamitamas/Samples8GeV/Ap0.001GeV_sim/*.root'
+file_list = glob.glob(sample_file)
+
+# Check the first file for available fields
+if file_list:
+    filename = file_list[0]
+    with uproot.open(filename) as file:
+        keys = file.keys()
+        print("Available keys in the file:", keys)
+
+        if 'LDMX_Events' in keys:
+            tree = file['LDMX_Events']
+            branches = tree.keys()
+            print("Available branches in 'LDMX_Events':", branches)
+        else:
+            print("No 'LDMX_Events' tree found in this file.")
+else:
+    print(f"No files found at {sample_file}")
+
+# The rest of the script continues below if the correct fields are identified
+
 # v14 8gev files
 file_templates = {
     0.001: '/home/vamitamas/Samples8GeV/Ap0.001GeV_sim/*.root',
@@ -79,7 +101,7 @@ for mass in file_templates.keys():
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
-        if nEvents >= 100:
+        if nEvents >= 2e4:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
