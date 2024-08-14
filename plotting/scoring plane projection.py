@@ -38,6 +38,25 @@ def pad_array(arr):
     arr = awkward.fill_none(arr, 0)
     return awkward.flatten(arr)
 
+# Inspect available fields in one of the ROOT files
+def inspect_file(sample_file):
+    file_list = glob.glob(sample_file)
+    if file_list:
+        filename = file_list[0]
+        with uproot.open(filename) as file:
+            print("Available keys in the file:", file.keys())
+
+            if 'LDMX_Events' in file.keys():
+                tree = file['LDMX_Events']
+                print("Available branches in 'LDMX_Events':", tree.keys())
+            else:
+                print("No 'LDMX_Events' tree found in this file.")
+    else:
+        print(f"No files found at {sample_file}")
+
+# Run inspection on a sample file
+inspect_file('/home/vamitamas/Samples8GeV/Ap0.001GeV_sim/*.root')
+
 # v14 8gev files
 file_templates = {
     0.001: '/home/vamitamas/Samples8GeV/Ap0.001GeV_sim/*.root',
@@ -68,7 +87,7 @@ for mass in file_templates.keys():
         branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalRecHits_sim/ECalRecHits_sim.energy_', 
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalRecHits_sim/ECalRecHits_sim.energy_',
                       'ECalRecHits_sim/ECalRecHits_sim.isNoise_']
 
     file_list = glob.glob(file_templates[mass])
@@ -159,38 +178,36 @@ for mass in file_templates.keys():
                     fiducial = False
                     fXY = projection(recoilX[i], recoilY[i], SP_TARGET_DOWN_Z, recoilPx[i], recoilPy[i], recoilPz[i], ECAL_FACE_Z)
                     if not (recoilX[i] == 0 and recoilY[i] == 0 and recoilPx[i] == 0 and recoilPy[i] == 0 and recoilPz[i] == 0):
-                        for j in range(len(cells)):
-                            celldis = dist(cells[j], fXY)
-                            if celldis <= CELL_RADIUS:
-                                fiducial = True
-                                break
-                    if fiducial:
-                        f_cut[i] = True
+for j in range(len(cells)):
+  celldis = dist(cells[j],fXY)
+  if celldis <= CELL_RADIUS:
+    fiducial = True
+    break
+    if fiducial:
+      f_cut[i] = True
+                  # add nonfiducial count to running total
+            non_fid_events = f_cut == 0
+            nNonFid += np.sum(non_fid_events)
 
-                # add nonfiducial count to running total
-                non_fid_events = f_cut == 0
-                nNonFid += np.sum(non_fid_events)
+            # Extract ECal energy for non-fiducial events, considering noise
+            for event in range(len(ecal_energy)):
+                for hit in range(len(ecal_energy[event])):
+                    if not is_noise[event][hit] and non_fid_events[event]:
+                        ecal_energy_hits.append(ecal_energy[event][hit])
 
-                # Extract ECal energy for non-fiducial events, considering noise
-                for event in range(len(ecal_energy)):
-                    for hit in range(len(ecal_energy[event])):
-                        if not is_noise[event][hit] and non_fid_events[event]:
-                            ecal_energy_hits.append(ecal_energy[event][hit])
+    except OSError:  # uproot complains and need to skip these files
+        continue
 
-        except OSError:  # uproot complains and need to skip these files
-            continue
+# compute nonfiducial ratio (for this mass point)
+if nEvents > 0:
+    nonfid_ratio = nNonFid / nEvents
+    nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
+    nonfid_ratios[mass] = {
+        "ratio": nonfid_ratio,
+        "uncertainty": nonfid_uncertainty,
+        "ecal_energy_hits": ecal_energy_hits
+    }
+else:
+    nonfid_ratios[mass] = "no events"
 
-    # compute nonfiducial ratio (for this mass point)
-    if nEvents > 0:
-        nonfid_ratio = nNonFid / nEvents
-        nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
-        nonfid_ratios[mass] = {
-            "ratio": nonfid_ratio,
-            "uncertainty": nonfid_uncertainty,
-            "ecal_energy_hits": ecal_energy_hits
-        }
-    else:
-        nonfid_ratios[mass] = "no events"
-
-# Print non-fiducial ratios with uncertainties
-print(json.dumps(nonfid_ratios, indent=4))
+    print(json.dumps(nonfid_ratios,indent=4))
