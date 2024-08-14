@@ -38,28 +38,6 @@ def pad_array(arr):
     arr = awkward.fill_none(arr, 0)
     return awkward.flatten(arr)
 
-# Path to one of the files
-sample_file = '/home/vamitamas/Samples8GeV/Ap0.001GeV_sim/*.root'
-file_list = glob.glob(sample_file)
-
-# Check the first file for available fields
-if file_list:
-    filename = file_list[0]
-    with uproot.open(filename) as file:
-        keys = file.keys()
-        print("Available keys in the file:", keys)
-
-        if 'LDMX_Events' in keys:
-            tree = file['LDMX_Events']
-            branches = tree.keys()
-            print("Available branches in 'LDMX_Events':", branches)
-        else:
-            print("No 'LDMX_Events' tree found in this file.")
-else:
-    print(f"No files found at {sample_file}")
-
-# The rest of the script continues below if the correct fields are identified
-
 # v14 8gev files
 file_templates = {
     0.001: '/home/vamitamas/Samples8GeV/Ap0.001GeV_sim/*.root',
@@ -84,12 +62,14 @@ for mass in file_templates.keys():
         branchList = ['TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pdgID_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.x_',
                       'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.y_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.z_',
                       'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.px_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.py_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 'TriggerSums20Layers_signal/pass_']
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 'TriggerSums20Layers_signal/pass_',
+                      'ECalRecHits_signal/ECalRecHits_signal.energy_', 'ECalRecHits_signal/ECalRecHits_signal.isNoise_']
     else:
         branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalHits_sim.energy_', 'ECalHits_sim.isNoise_']
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalRecHits_sim/ECalRecHits_sim.energy_', 
+                      'ECalRecHits_sim/ECalRecHits_sim.isNoise_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
@@ -131,8 +111,8 @@ for mass in file_templates.keys():
                 px = data[branchList[4]]
                 py = data[branchList[5]]
                 pz = data[branchList[6]]
-                ecal_energy = data['ECalHits_sim.energy_']
-                is_noise = data['ECalHits_sim.isNoise_']
+                ecal_energy = data[branchList[7]]
+                is_noise = data[branchList[8]]
 
                 # Apply trigger for signal
                 if mass:
@@ -147,8 +127,8 @@ for mass in file_templates.keys():
                     px = tskimmed_data[branchList[4]]
                     py = tskimmed_data[branchList[5]]
                     pz = tskimmed_data[branchList[6]]
-                    ecal_energy = tskimmed_data['ECalHits_sim.energy_']
-                    is_noise = tskimmed_data['ECalHits_sim.isNoise_']
+                    ecal_energy = tskimmed_data[branchList[7]]
+                    is_noise = tskimmed_data[branchList[8]]
 
                 # add events to running count
                 nEvents += len(z)
@@ -191,11 +171,11 @@ for mass in file_templates.keys():
                 non_fid_events = f_cut == 0
                 nNonFid += np.sum(non_fid_events)
 
-                # Extract ECal energy for non-fiducial events
-                if not mass:  # only for background
-                    # Ignore hits marked as noise
-                    valid_hits = ~is_noise & non_fid_events
-                    ecal_energy_hits.extend(ecal_energy[valid_hits])
+                # Extract ECal energy for non-fiducial events, considering noise
+                for event in range(len(ecal_energy)):
+                    for hit in range(len(ecal_energy[event])):
+                        if not is_noise[event][hit] and non_fid_events[event]:
+                            ecal_energy_hits.append(ecal_energy[event][hit])
 
         except OSError:  # uproot complains and need to skip these files
             continue
