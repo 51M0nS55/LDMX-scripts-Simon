@@ -173,18 +173,18 @@ for mass in file_templates.keys():
 
                 # fiducial cut
                 N = len(recoilX)
-                f_cut = np.zeros(N, dtype=bool)
-                for i in range(N):
-                    fiducial = False
-                    fXY = projection(recoilX[i], recoilY[i], SP_TARGET_DOWN_Z, recoilPx[i], recoilPy[i], recoilPz[i], ECAL_FACE_Z)
-                    if not (recoilX[i] == 0 and recoilY[i] == 0 and recoilPx[i] == 0 and recoilPy[i] == 0 and recoilPz[i] == 0):
-                        for j in range(len(cells)):
-                            celldis = dist(cells[j],fXY)
-                            if celldis <= CELL_RADIUS:
-                              fiducial = True
-                              break
-                   if fiducial:
-                        f_cut[i] = True
+f_cut = np.zeros(N, dtype=bool)
+for i in range(N):
+    fiducial = False
+    fXY = projection(recoilX[i], recoilY[i], SP_TARGET_DOWN_Z, recoilPx[i], recoilPy[i], recoilPz[i], ECAL_FACE_Z)
+    if not (recoilX[i] == 0 and recoilY[i] == 0 and recoilPx[i] == 0 and recoilPy[i] == 0 and recoilPz[i] == 0):
+        for j in range(len(cells)):
+            celldis = dist(cells[j], fXY)
+            if celldis <= CELL_RADIUS:
+                fiducial = True
+                break
+    if fiducial:
+        f_cut[i] = True
                   # add nonfiducial count to running total
             non_fid_events = f_cut == 0
             nNonFid += np.sum(non_fid_events)
