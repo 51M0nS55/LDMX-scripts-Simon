@@ -195,19 +195,19 @@ for mass in file_templates.keys():
                     if not is_noise[event][hit] and non_fid_events[event]:
                         ecal_energy_hits.append(ecal_energy[event][hit])
 
-    except OSError:  # uproot complains and need to skip these files
-        continue
+        except OSError:  # uproot complains and need to skip these files
+            continue
 
 # compute nonfiducial ratio (for this mass point)
-if nEvents > 0:
-    nonfid_ratio = nNonFid / nEvents
-    nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
-    nonfid_ratios[mass] = {
-        "ratio": nonfid_ratio,
-        "uncertainty": nonfid_uncertainty,
-        "ecal_energy_hits": ecal_energy_hits
-    }
-else:
-    nonfid_ratios[mass] = "no events"
+    if nEvents > 0:
+        nonfid_ratio = nNonFid / nEvents
+        nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
+        nonfid_ratios[mass] = {
+            "ratio": nonfid_ratio,
+            "uncertainty": nonfid_uncertainty,
+            "ecal_energy_hits": ecal_energy_hits
+        }
+    else:
+        nonfid_ratios[mass] = "no events"
 
-    print(json.dumps(nonfid_ratios,indent=4))
+print(json.dumps(nonfid_ratios,indent=4))
