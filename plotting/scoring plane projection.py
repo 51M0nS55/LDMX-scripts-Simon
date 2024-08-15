@@ -68,17 +68,26 @@ for mass in file_templates.keys():
 
     # Different branch name syntax for signal vs. bkg
     if mass:
-        branchList = ['TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pdgID_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.x_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.y_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.z_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.px_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.py_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 'TriggerSums20Layers_signal/pass_',
-                      'ECalRecHits_signal/ECalRecHits_signal.energy_', 'ECalRecHits_signal/ECalRecHits_signal.isNoise_']
+        branchList = ['TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pdgID_',
+        'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.x_',
+        'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.y_',
+        'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.z_',
+        'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.px_',
+        'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.py_',
+        'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_',
+        'TriggerSums20Layers_signal/pass_',
+        'EcalRecHits_signal/EcalRecHits_signal.energy_',
+        'EcalRecHits_signal/EcalRecHits_signal.isNoise_']
     else:
-        branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalRecHits_sim/ECalRecHits_sim.energy_',
-                      'ECalRecHits_sim/ECalRecHits_sim.isNoise_']
+        branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_',
+        'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
+        'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_',
+        'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
+        'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_',
+        'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
+        'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_',
+        'EcalRecHits_sim/EcalRecHits_sim.energy_',
+        'EcalRecHits_sim/EcalRecHits_sim.isNoise_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
