@@ -46,11 +46,11 @@ def inspect_file(sample_file):
         with uproot.open(filename) as file:
             print("Available keys in the file:", file.keys())
 
-            if 'LDMX_Events;6' in file.keys():
-                tree = file['LDMX_Events;6']
-                print("Available branches in 'LDMX_Events;6':", tree.keys())
+            if 'LDMX_Events;5' in file.keys():
+                tree = file['LDMX_Events;5']
+                print("Available branches in 'LDMX_Events;5':", tree.keys())
             else:
-                print("No 'LDMX_Events;6' tree found in this file.")
+                print("No 'LDMX_Events;5' tree found in this file.")
     else:
         print(f"No files found at {sample_file}")
 
@@ -117,7 +117,7 @@ for mass in file_templates.keys():
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
 
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
+            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;5'] as t:
                 if not t.keys():  # if no keys in 'LDMX_Events'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
