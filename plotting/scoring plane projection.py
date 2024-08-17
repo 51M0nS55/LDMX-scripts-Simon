@@ -80,7 +80,7 @@ for mass in file_templates.keys():
 
     # Loop over files for this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
-        if nEvents >= 2e4:
+        if nEvents >= 100:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
@@ -185,6 +185,23 @@ for mass in file_templates.keys():
         }
     else:
         nonfid_ratios[mass] = "no events"
+
+# Extract ECal energy for non-fiducial events
+if not mass:  # only for background
+    energy = data['EcalRecHits_signal/EcalRecHits_signal.energy_']
+    isNoise = data['EcalRecHits_signal/EcalRecHits_signal.isNoise_']
+    
+    # Loop over events and energy hits
+    for event in range(len(energy)):
+        if event >= len(non_fid_events):
+            continue  # Skip if the event index is out of range for non_fid_events
+        for hit in range(len(energy[event])):
+            if hit >= len(isNoise[event]):
+                continue  # Skip if the hit index is out of range for isNoise
+            if not isNoise[event][hit] and non_fid_events[event]:
+                hit_energy = energy[event][hit]
+                ecal_energy_hits.append(hit_energy)
+
 
 # Print non-fiducial ratios with uncertainties
 print(json.dumps(nonfid_ratios, indent=4))
