@@ -39,12 +39,13 @@ def pad_array(arr):
     return awkward.flatten(arr)
 
 # Helper function to safely load branches
-def safe_load_branch(data, branch_name):
+def safe_load_branch(data, branch_name, field_name=None):
     if branch_name in data:
+        if field_name:
+            return data[branch_name][field_name]
         return data[branch_name]
     else:
-        print(f"Branch {branch_name} missing. Skipping this branch.")
-        return None
+        raise KeyError(f"Branch {branch_name} not found in the file.")
 
 # v14 8GeV files
 file_templates = {
@@ -114,8 +115,7 @@ for mass in file_templates.keys():
 
                 # Load data safely, branch by branch
                 data = t.arrays(branchList, interpretation_executor=executor)
-                
-                pdgID = safe_load_branch(data, branchList[0])
+                pdgID = safe_load_branch(data, branchList[0], 'pdgID')
                 x = safe_load_branch(data, branchList[1])
                 y = safe_load_branch(data, branchList[2])
                 z = safe_load_branch(data, branchList[3])
