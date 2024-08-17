@@ -16,7 +16,7 @@ ECAL_SP_Z = 239.9985
 ECAL_FACE_Z = 247.932
 CELL_RADIUS = 5.0
 
-# Functions for distance and projection calculations
+# some functions for computing distance of recoil electrons to ecal cells
 def dist(p1, p2):
     return math.sqrt(np.sum((np.array(p1) - np.array(p2)) ** 2))
 
@@ -47,55 +47,58 @@ file_templates = {
     0: '/home/vamitamas/Samples8GeV/v3.3.3_ecalPN*/*.root'
 }
 
-# Load ecal cell geometry
+# load ecal cell geometry
 _load_cellMap()
 
-# Dictionary for nonfiducial ratios (for each mass point)
+# dictionary for nonfiducial ratios (for each mass point)
 nonfid_ratios = {}
-# Loop over mass points
+# loop over mass points
 for mass in file_templates.keys():
 
     print(f"==== m = {mass} ====", flush=True)
 
-    # Branch lists for signal vs. background
+    # different branch name syntax for signal vs. bkg
     if mass:
         branchList = ['TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pdgID_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.x_',
                       'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.y_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.z_',
                       'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.px_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.py_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 'TriggerSums20Layers_signal/pass_',
-                      'EcalRecHits_signal/EcalRecHits_signal.energy_', 'EcalRecHits_signal/EcalRecHits_signal.isNoise_']
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 'TriggerSums20Layers_signal/pass_']
     else:
         branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'EcalRecHits_sim/EcalRecHits_sim.energy_',
-                      'EcalRecHits_sim/EcalRecHits_sim.isNoise_']
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalHits_sim.energy_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
 
-    nEvents = 0  # Count total events (post-trigger)
-    nNonFid = 0  # Count nonfiducial events
-    ecal_energy_hits = []  # Store ECal energy hits for non-fiducial events
+    nEvents = 0  # count total events (post-trigger)
+    nNonFid = 0  # count nonfiducial events
+    ecal_energy_hits = []  # store ECal energy hits for non-fiducial events
 
-    # Loop over files for this mass
+    # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
-        if nEvents >= 100:
+        # stop after i events
+        if nEvents >= 2e4:
             break
         try:
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
-                if not t.keys():
+            with uproot.open(filename, interpretation_executor=executor) as file:
+                if not file.keys():  # if no keys in file
+                    print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
+                    continue
+
+            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events'] as t:
+                if not t.keys():  # if no keys in 'LDMX_Events'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
                 key_miss = False
                 for branch in branchList:
-                    if not re.split('/', branch)[0] in t.keys():
+                    if not re.split('/', branch)[0] in t.keys():  # if one or more desired keys missing
                         key_miss = True
                         break
                 if key_miss:
                     print(f"MISSING KEY(S) IN: {filename}  SKIPPING...", flush=True)
                     continue
-
                 data = t.arrays(branchList, interpretation_executor=executor)
 
                 # tsp leaves
@@ -121,7 +124,7 @@ for mass in file_templates.keys():
                     py = tskimmed_data[branchList[5]]
                     pz = tskimmed_data[branchList[6]]
 
-                # Add events to running count
+                # add events to running count
                 nEvents += len(z)
 
                 # Select recoil electron at downstream tsp (maximal forward moving pz electron)
@@ -143,7 +146,7 @@ for mass in file_templates.keys():
                 recoilPy = pad_array(py[e_cut])
                 recoilPz = pad_array(pz[e_cut])
 
-                # Fiducial cut
+                # fiducial cut
                 N = len(recoilX)
                 f_cut = np.zeros(N, dtype=bool)
                 for i in range(N):
@@ -158,23 +161,41 @@ for mass in file_templates.keys():
                     if fiducial:
                         f_cut[i] = True
 
-                # Add nonfiducial count to running total
+                # add nonfiducial count to running total
                 non_fid_events = f_cut == 0
                 nNonFid += np.sum(non_fid_events)
 
+                # Debug: Check the sizes of the arrays
+                print(f"non_fid_events size: {len(non_fid_events)}")
+                
                 # Extract ECal energy for non-fiducial events
-                energy = data[branchList[8]]
-                isNoise = data[branchList[9]]
+                if not mass:  # only for background
+                    energy = data['ECalRecHits_signal/ECalRecHits_signal.energy_']
+                    isNoise = data['ECalRecHits_signal/ECalRecHits_signal.isNoise_']
+                    
+                    print(f"Energy array size: {len(energy)}")
+                    print(f"isNoise array size: {len(isNoise)}")
 
-                for event in range(len(energy)):
-                    for hit in range(len(energy[event])):
-                        if not isNoise[event][hit] and non_fid_events[event]:
-                            ecal_energy_hits.append(energy[event][hit])
+                    # Loop over events and energy hits
+                    for event in range(len(energy)):
+                        if event >= len(non_fid_events):
+                            print(f"Skipping event {event}, out of range for non_fid_events")
+                            continue
+                        for hit in range(len(energy[event])):
+                            if hit >= len(isNoise[event]):
+                                print(f"Skipping hit {hit} in event {event}, out of range for isNoise")
+                                continue
+                            try:
+                                if not isNoise[event][hit] and non_fid_events[event]:
+                                    hit_energy = energy[event][hit]
+                                    ecal_energy_hits.append(hit_energy)
+                            except IndexError as e:
+                                print(f"IndexError at event {event}, hit {hit}: {e}")
 
-        except OSError:
+        except OSError:  # uproot complains and need to skip these files
             continue
 
-    # Compute nonfiducial ratio (for this mass point)
+    # compute nonfiducial ratio (for this mass point)
     if nEvents > 0:
         nonfid_ratio = nNonFid / nEvents
         nonfid_uncertainty = nonfid_ratio * (math.sqrt(nNonFid) / nNonFid + math.sqrt(nEvents) / nEvents)
@@ -185,23 +206,6 @@ for mass in file_templates.keys():
         }
     else:
         nonfid_ratios[mass] = "no events"
-
-# Extract ECal energy for non-fiducial events
-if not mass:  # only for background
-    energy = data['EcalRecHits_signal/EcalRecHits_signal.energy_']
-    isNoise = data['EcalRecHits_signal/EcalRecHits_signal.isNoise_']
-    
-    # Loop over events and energy hits
-    for event in range(len(energy)):
-        if event >= len(non_fid_events):
-            continue  # Skip if the event index is out of range for non_fid_events
-        for hit in range(len(energy[event])):
-            if hit >= len(isNoise[event]):
-                continue  # Skip if the hit index is out of range for isNoise
-            if not isNoise[event][hit] and non_fid_events[event]:
-                hit_energy = energy[event][hit]
-                ecal_energy_hits.append(hit_energy)
-
 
 # Print non-fiducial ratios with uncertainties
 print(json.dumps(nonfid_ratios, indent=4))
