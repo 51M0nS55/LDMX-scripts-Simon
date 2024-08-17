@@ -109,7 +109,7 @@ for mass in file_templates.keys():
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
-        if nEvents >= 10000:
+        if nEvents >= 100:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
@@ -143,18 +143,18 @@ for mass in file_templates.keys():
                 is_noise = data[branchList[8]]
 
                 # Apply trigger for signal
-                if mass:
-                    tskimmed_data = {}
-                    trig_pass = data[branchList[7]]
-                    for branch in branchList:
-                        tskimmed_data[branch] = data[branch][trig_pass]
-                    pdgID = tskimmed_data[branchList[0]]
-                    x = tskimmed_data[branchList[1]]
-                    y = tskimmed_data[branchList[2]]
-                    z = tskimmed_data[branchList[3]]
-                    px = tskimmed_data[branchList[4]]
-                    py = tskimmed_data[branchList[5]]
-                    pz = tskimmed_data[branchList[6]]
+                #if mass:
+                #    tskimmed_data = {}
+                #    trig_pass = data[branchList[7]]
+                #    for branch in branchList:
+                #        tskimmed_data[branch] = data[branch][trig_pass]
+                #    pdgID = tskimmed_data[branchList[0]]
+                #    x = tskimmed_data[branchList[1]]
+                #    y = tskimmed_data[branchList[2]]
+                #    z = tskimmed_data[branchList[3]]
+                #    px = tskimmed_data[branchList[4]]
+                #    py = tskimmed_data[branchList[5]]
+                #    pz = tskimmed_data[branchList[6]]
                     ecal_energy = tskimmed_data[branchList[7]]
                     is_noise = tskimmed_data[branchList[8]]
 
@@ -221,3 +221,5 @@ for mass in file_templates.keys():
         nonfid_ratios[mass] = "no events"
 
 print(json.dumps(nonfid_ratios, indent=4))
+print(f"Fiducial events: {np.sum(f_cut)}")
+print(f"Loaded {len(z)} events from file {filename}")
