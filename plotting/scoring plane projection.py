@@ -109,7 +109,7 @@ for mass in file_templates.keys():
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
-        if nEvents >= 100:
+        if nEvents >= 10000:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
