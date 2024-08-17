@@ -143,18 +143,18 @@ for mass in file_templates.keys():
                 is_noise = data[branchList[8]]
 
                 # Apply trigger for signal
-                #if mass:
-                #    tskimmed_data = {}
-                #    trig_pass = data[branchList[7]]
-                #    for branch in branchList:
-                #        tskimmed_data[branch] = data[branch][trig_pass]
-                #    pdgID = tskimmed_data[branchList[0]]
-                #    x = tskimmed_data[branchList[1]]
-                #    y = tskimmed_data[branchList[2]]
-                #    z = tskimmed_data[branchList[3]]
-                #    px = tskimmed_data[branchList[4]]
-                #    py = tskimmed_data[branchList[5]]
-                #    pz = tskimmed_data[branchList[6]]
+                if mass:
+                    tskimmed_data = {}
+                    trig_pass = data[branchList[7]]
+                    for branch in branchList:
+                        tskimmed_data[branch] = data[branch][trig_pass]
+                    pdgID = tskimmed_data[branchList[0]]
+                    x = tskimmed_data[branchList[1]]
+                    y = tskimmed_data[branchList[2]]
+                    z = tskimmed_data[branchList[3]]
+                    px = tskimmed_data[branchList[4]]
+                    py = tskimmed_data[branchList[5]]
+                    pz = tskimmed_data[branchList[6]]
                     ecal_energy = tskimmed_data[branchList[7]]
                     is_noise = tskimmed_data[branchList[8]]
 
