@@ -88,7 +88,7 @@ for mass in file_templates.keys():
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
-        if nEvents >= 100:
+        if nEvents >= 100:  # Adjust this if needed for more events
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
@@ -179,6 +179,11 @@ for mass in file_templates.keys():
                 if not mass:  # only for background
                     energy = data['EcalRecHits_sim/EcalRecHits_sim.energy_']
                     isNoise = data['EcalRecHits_sim/EcalRecHits_sim.isNoise_']
+
+                    # Debugging: Check if energy and isNoise have valid sizes
+                    print(f"Energy array shape: {energy.shape}")
+                    print(f"isNoise array shape: {isNoise.shape}")
+                    print(f"non_fid_events size: {len(non_fid_events)}")
 
                     for event in range(len(energy)):
                         if event >= len(non_fid_events):  # Skip if the event index is out of range for non_fid_events
