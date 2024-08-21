@@ -88,7 +88,7 @@ for mass in file_templates.keys():
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
-        if nEvents >= 100:  # Adjust this if needed for more events
+        if nEvents >= 100:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
@@ -97,7 +97,7 @@ for mass in file_templates.keys():
                     continue
 
             # Ensure we're accessing 'LDMX_Events;6'
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;5'] as t:
+            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
                 if not t.keys():  # if no keys in 'LDMX_Events;6'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
@@ -175,15 +175,15 @@ for mass in file_templates.keys():
                 non_fid_events = f_cut == 0
                 nNonFid += np.sum(non_fid_events)
 
-                # Extract ECal energy for non-fiducial events
+                # Debugging: Print the content of energy and isNoise arrays
                 if not mass:  # only for background
                     energy = data['EcalRecHits_sim/EcalRecHits_sim.energy_']
                     isNoise = data['EcalRecHits_sim/EcalRecHits_sim.isNoise_']
 
-                    # Debugging: Check if energy and isNoise have valid sizes
-                    print(f"Energy array shape: {energy.shape}")
-                    print(f"isNoise array shape: {isNoise.shape}")
-                    print(f"non_fid_events size: {len(non_fid_events)}")
+                    # Check if energy and isNoise are populated
+                    print(f"Energy array length: {len(energy)}")
+                    print(f"First event energy: {energy[0] if len(energy) > 0 else 'No data'}")
+                    print(f"First event isNoise: {isNoise[0] if len(isNoise) > 0 else 'No data'}")
 
                     for event in range(len(energy)):
                         if event >= len(non_fid_events):  # Skip if the event index is out of range for non_fid_events
