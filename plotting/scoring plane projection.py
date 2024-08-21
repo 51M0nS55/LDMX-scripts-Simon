@@ -22,7 +22,7 @@ def dist(p1, p2):
 
 def projection(Recoilx, Recoily, Recoilz, RPx, RPy, RPz, HitZ):
     x_final = Recoilx + RPx / RPz * (HitZ - Recoilz) if RPz else 0
-    y_final = Recoily + RPy / RPz * (HitZ - Recoilz) if RPy else 0
+    y_final = Recoily + RPy / RPz * (HitZ - Recoilz) if RPz else 0
     return (x_final, y_final)
 
 def _load_cellMap(version='v13'):
@@ -75,8 +75,7 @@ for mass in file_templates.keys():
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 
-                      'EcalRecHits_sim/EcalRecHits_sim.energy_',
-                      'EcalRecHits_sim/EcalRecHits_sim.isNoise_']
+                      'EcalRecHits_sim/EcalRecHits_sim.energy_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
@@ -97,7 +96,7 @@ for mass in file_templates.keys():
                     continue
 
             # Ensure we're accessing 'LDMX_Events;6'
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;5'] as t:
+            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
                 if not t.keys():  # if no keys in 'LDMX_Events;6'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
@@ -175,15 +174,18 @@ for mass in file_templates.keys():
                 non_fid_events = f_cut == 0
                 nNonFid += np.sum(non_fid_events)
 
-                # Debugging: Print the content of energy and isNoise arrays
+                # Debugging: check if any events have been read at all
+                if len(non_fid_events) == 0:
+                    print(f"No non-fiducial events found in {filename}")
+                else:
+                    print(f"Non-fiducial events found in {filename}: {np.sum(non_fid_events)}")
+
+                # Extract ECal energy for non-fiducial events
                 if not mass:  # only for background
                     energy = data['EcalRecHits_sim/EcalRecHits_sim.energy_']
                     isNoise = data['EcalRecHits_sim/EcalRecHits_sim.isNoise_']
 
-                    # Check if energy and isNoise are populated
-                    print(f"Energy array length: {len(energy)}")
-                    print(f"First event energy: {energy[0] if len(energy) > 0 else 'No data'}")
-                    print(f"First event isNoise: {isNoise[0] if len(isNoise) > 0 else 'No data'}")
+                    print(f"Energy array shape: {len(energy)}, IsNoise array shape: {len(isNoise)}")
 
                     for event in range(len(energy)):
                         if event >= len(non_fid_events):  # Skip if the event index is out of range for non_fid_events
