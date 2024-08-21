@@ -10,13 +10,13 @@ import json
 
 executor = concurrent.futures.ThreadPoolExecutor(20)
 
-# Detector constants
+# detector constants
 SP_TARGET_DOWN_Z = 0.1767
 ECAL_SP_Z = 239.9985
 ECAL_FACE_Z = 247.932
 CELL_RADIUS = 5.0
 
-# Some functions for computing distance of recoil electrons to ECal cells
+# some functions for computing distance of recoil electrons to ecal cells
 def dist(p1, p2):
     return math.sqrt(np.sum((np.array(p1) - np.array(p2)) ** 2))
 
@@ -47,13 +47,12 @@ file_templates = {
     0: '/home/vamitamas/Samples8GeV/v3.3.3_ecalPN*/*.root'
 }
 
-# Load ECal cell geometry
+# load ecal cell geometry
 _load_cellMap()
 
-# Dictionary for non-fiducial ratios (for each mass point)
+# dictionary for nonfiducial ratios (for each mass point)
 nonfid_ratios = {}
-
-# Loop over mass points
+# loop over mass points
 for mass in file_templates.keys():
 
     print(f"==== m = {mass} ====", flush=True)
@@ -76,34 +75,35 @@ for mass in file_templates.keys():
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
                       'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 
-                      'EcalRecHits_sim/EcalRecHits_sim.energy_']
+                      'EcalRecHits_sim/EcalRecHits_sim.energy_',
+                      'EcalRecHits_sim/EcalRecHits_sim.isNoise_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
 
-    nEvents = 0  # Count total events (post-trigger)
-    nNonFid = 0  # Count non-fiducial events
-    ecal_energy_hits = []  # Store ECal energy hits for non-fiducial events
+    nEvents = 0  # count total events (post-trigger)
+    nNonFid = 0  # count nonfiducial events
+    ecal_energy_hits = []  # store ECal energy hits for non-fiducial events
 
-    # Loop over files of this mass
+    # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
-        # Stop after i events
+        # stop after i events
         if nEvents >= 100:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
-                if not file.keys():  # If no keys in file
+                if not file.keys():  # if no keys in file
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
 
             # Ensure we're accessing 'LDMX_Events;6'
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;5'] as t:
-                if not t.keys():  # If no keys in 'LDMX_Events;6'
+            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
+                if not t.keys():  # if no keys in 'LDMX_Events;6'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
                 key_miss = False
                 for branch in branchList:
-                    if not re.split('/', branch)[0] in t.keys():  # If one or more desired keys missing
+                    if not re.split('/', branch)[0] in t.keys():  # if one or more desired keys missing
                         key_miss = True
                         break
                 if key_miss:
@@ -111,7 +111,7 @@ for mass in file_templates.keys():
                     continue
                 data = t.arrays(branchList, interpretation_executor=executor)
 
-                # TSP leaves
+                # tsp leaves
                 pdgID = data[branchList[0]]
                 x = data[branchList[1]]
                 y = data[branchList[2]]
@@ -134,10 +134,10 @@ for mass in file_templates.keys():
                     py = tskimmed_data[branchList[5]]
                     pz = tskimmed_data[branchList[6]]
 
-                # Add events to running count
+                # add events to running count
                 nEvents += len(z)
 
-                # Select recoil electron at downstream TSP (maximal forward moving pz electron)
+                # Select recoil electron at downstream tsp (maximal forward moving pz electron)
                 e_cut = np.zeros_like(px, dtype=bool).tolist()
                 for i in range(len(px)):
                     maxPz = 0
@@ -156,7 +156,7 @@ for mass in file_templates.keys():
                 recoilPy = pad_array(py[e_cut])
                 recoilPz = pad_array(pz[e_cut])
 
-                # Fiducial cut
+                # fiducial cut
                 N = len(recoilX)
                 f_cut = np.zeros(N, dtype=bool)
                 for i in range(N):
@@ -171,12 +171,12 @@ for mass in file_templates.keys():
                     if fiducial:
                         f_cut[i] = True
 
-                # Add non-fiducial count to running total
+                # add nonfiducial count to running total
                 non_fid_events = f_cut == 0
                 nNonFid += np.sum(non_fid_events)
 
                 # Extract ECal energy for non-fiducial events
-                if not mass:  # Only for background
+                if not mass:  # only for background
                     energy = data['EcalRecHits_sim/EcalRecHits_sim.energy_']
                     isNoise = data['EcalRecHits_sim/EcalRecHits_sim.isNoise_']
 
@@ -190,10 +190,10 @@ for mass in file_templates.keys():
                                 hit_energy = energy[event][hit]
                                 ecal_energy_hits.append(hit_energy)
 
-        except OSError:  # Uproot complains and need to skip these files
+        except OSError:  # uproot complains and need to skip these files
             continue
 
-    # Compute non-fiducial ratio (for this mass point)
+    # compute nonfiducial ratio (for this mass point)
     if nEvents > 0:
         nonfid_ratio = nNonFid / nEvents
         nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
