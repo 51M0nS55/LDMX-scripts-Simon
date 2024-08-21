@@ -57,17 +57,25 @@ for mass in file_templates.keys():
 
     print(f"==== m = {mass} ====", flush=True)
 
-    # different branch name syntax for signal vs. bkg
+    # Branch names based on signal or background
     if mass:
-        branchList = ['TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pdgID_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.x_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.y_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.z_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.px_', 'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.py_',
-                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 'TriggerSums20Layers_signal/pass_']
+        branchList = ['TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pdgID_', 
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.x_',
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.y_', 
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.z_',
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.px_', 
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.py_',
+                      'TargetScoringPlaneHits_signal/TargetScoringPlaneHits_signal.pz_', 
+                      'TriggerSums20Layers_signal/pass_']
     else:
-        branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
-                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 'ECalHits_sim.energy_']
+        branchList = ['TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pdgID_', 
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.x_',
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.y_', 
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.z_',
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.px_', 
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.py_',
+                      'TargetScoringPlaneHits_sim/TargetScoringPlaneHits_sim.pz_', 
+                      'EcalRecHits_sim/EcalRecHits_sim.energy_']
 
     file_list = glob.glob(file_templates[mass])
     nFiles = len(file_list)
@@ -79,7 +87,7 @@ for mass in file_templates.keys():
     # loop over files of this mass
     for i, filename in tqdm(enumerate(file_list), total=nFiles):
         # stop after i events
-        if nEvents >= 100:
+        if nEvents >= 2e4:
             break
         try:
             with uproot.open(filename, interpretation_executor=executor) as file:
@@ -87,8 +95,9 @@ for mass in file_templates.keys():
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
 
-            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events'] as t:
-                if not t.keys():  # if no keys in 'LDMX_Events'
+            # Ensure we're accessing 'LDMX_Events;6'
+            with uproot.open(filename, interpretation_executor=executor)['LDMX_Events;6'] as t:
+                if not t.keys():  # if no keys in 'LDMX_Events;6'
                     print(f"FOUND ZOMBIE: {filename}  SKIPPING...", flush=True)
                     continue
                 key_miss = False
@@ -165,32 +174,20 @@ for mass in file_templates.keys():
                 non_fid_events = f_cut == 0
                 nNonFid += np.sum(non_fid_events)
 
-                # Debug: Check the sizes of the arrays
-                print(f"non_fid_events size: {len(non_fid_events)}")
-                
                 # Extract ECal energy for non-fiducial events
                 if not mass:  # only for background
-                    energy = data['ECalRecHits_signal/ECalRecHits_signal.energy_']
-                    isNoise = data['ECalRecHits_signal/ECalRecHits_signal.isNoise_']
-                    
-                    print(f"Energy array size: {len(energy)}")
-                    print(f"isNoise array size: {len(isNoise)}")
+                    energy = data['EcalRecHits_sim/EcalRecHits_sim.energy_']
+                    isNoise = data['EcalRecHits_sim/EcalRecHits_sim.isNoise_']
 
-                    # Loop over events and energy hits
                     for event in range(len(energy)):
-                        if event >= len(non_fid_events):
-                            print(f"Skipping event {event}, out of range for non_fid_events")
+                        if event >= len(non_fid_events):  # Skip if the event index is out of range for non_fid_events
                             continue
                         for hit in range(len(energy[event])):
-                            if hit >= len(isNoise[event]):
-                                print(f"Skipping hit {hit} in event {event}, out of range for isNoise")
+                            if hit >= len(isNoise[event]):  # Skip if the hit index is out of range for isNoise
                                 continue
-                            try:
-                                if not isNoise[event][hit] and non_fid_events[event]:
-                                    hit_energy = energy[event][hit]
-                                    ecal_energy_hits.append(hit_energy)
-                            except IndexError as e:
-                                print(f"IndexError at event {event}, hit {hit}: {e}")
+                            if not isNoise[event][hit] and non_fid_events[event]:
+                                hit_energy = energy[event][hit]
+                                ecal_energy_hits.append(hit_energy)
 
         except OSError:  # uproot complains and need to skip these files
             continue
@@ -198,7 +195,7 @@ for mass in file_templates.keys():
     # compute nonfiducial ratio (for this mass point)
     if nEvents > 0:
         nonfid_ratio = nNonFid / nEvents
-        nonfid_uncertainty = nonfid_ratio * (math.sqrt(nNonFid) / nNonFid + math.sqrt(nEvents) / nEvents)
+        nonfid_uncertainty = nonfid_ratio * math.sqrt((1 / nNonFid) ** 2 + (1 / nEvents) ** 2)
         nonfid_ratios[mass] = {
             "ratio": nonfid_ratio,
             "uncertainty": nonfid_uncertainty,
